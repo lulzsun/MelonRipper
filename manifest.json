@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+    "name": "MelonRipper",
+    "author": "lulzsun",
+    "homepage_url": "https://github.com/lulzsun/MelonRipper",
+    "version": "1.0",
+    "description": "Creates a .zip of the current eBook open on melonbooks.co.jp's viewer",
+
+    "icons": {
+        "120": "icons/melon_120.png"
+    },
+
+    "content_scripts": [
+        {
+        "matches": ["*://*.melonbooks.co.jp/viewer/*"],
+        "js": [
+            "melonripper.js",
+            "libs/jszip.min.js",
+            "libs/FileSaver.min.js"
+        ]
+    }],
+
+    "permissions": [
+        "<all_urls>",
+        "activeTab"
+    ],
+
+    "browser_action": {
+        "default_icon": "icons/melon_120.png",
+        "default_title": "MelonRipper",
+        "default_popup": "popup.html"
+    },
+
+    "browser_specific_settings": {
+        "gecko": {
+          "id": "lulzsun@github.com"
+        }
+    }
+}
