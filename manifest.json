@@ -14,7 +14,7 @@
         {
         "matches": ["*://*.melonbooks.co.jp/viewer/*"],
         "js": [
-            "melonripper.js",
+            "js/melonripper.js",
             "libs/jszip.min.js",
             "libs/FileSaver.min.js"
         ]
@@ -28,7 +28,7 @@
     "browser_action": {
         "default_icon": "icons/melon_120.png",
         "default_title": "MelonRipper",
-        "default_popup": "popup.html"
+        "default_popup": "html/popup.html"
     },
 
     "browser_specific_settings": {
