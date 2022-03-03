@@ -1,7 +1,7 @@
 // define global variables
 var imageArray = [];
 var isSaving = false;
-var tenth = 0;
+var lastIndex = 0;
 var pageTotal = 0;
 
 // create an observer instance, in order to detect page changes
@@ -10,11 +10,7 @@ const observer = new MutationObserver(function(mutations) {
 
     for(let mutation of mutations) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class' && mutation.target.className.includes('view-sheet-focus')) {
-
-
-
             savePages(mutation.target.firstChild.nextSibling.childNodes);
-
         }
     }
 });
@@ -45,6 +41,7 @@ const observer = new MutationObserver(function(mutations) {
     }
 })();
 
+
 // get images from canvases that are in focus (visible to the reader) and save to global var
 function savePages(pages) {
 
@@ -57,12 +54,10 @@ function savePages(pages) {
 
             console.log(`[MelonRipper] Saved page ${pageIndex+1} of ${imageArray.length}`);
             pageIndex++;
-
         }
-
-            if(pageIndex % 10 == 0){
-                saveToZip(tenth, pageIndex);
-                tenth = pageIndex;
+            if(pageIndex % 10 == 0 && pageIndex != 0){
+                saveToZip(lastIndex, pageIndex);
+                lastIndex = pageIndex;
                 imageArray = Array.apply(null, Array(pageTotal)).map(function () {});
             }
     }
@@ -118,7 +113,8 @@ browser.runtime.onMessage.addListener((message) => {
             status: 'saving'
         });
         isSaving = true;
-        saveToZip(tenth, pageTotal);
+        
+        saveToZip(lastIndex, pageTotal);
         console.log('[MelonRipper] Saving zip of book');
     }
 });
