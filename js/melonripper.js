@@ -56,7 +56,7 @@ function savePages() {
         console.log(`[MelonRipper] Saved page ${pageIndex+1} of ${imageArray.length}`);
         pageIndex++;
 
-        if(pageIndex % 10 == 0 && pageIndex != 0){
+        if((pageIndex % 10 == 0 && pageIndex != 0) || (pageIndex == pageTotal)) {
             saveToZip(lastIndex, pageIndex);
             lastIndex = pageIndex;
             imageArray = Array.apply(null, Array(pageTotal)).map(function () {});
