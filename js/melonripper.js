@@ -6,35 +6,22 @@ var pageTotal = 0;
 
 // create an observer instance, in order to detect page changes
 const observer = new MutationObserver(function(mutations) {
-
-
-    for(let mutation of mutations) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class' && mutation.target.className.includes('view-sheet-focus')) {
-            savePages(mutation.target.firstChild.nextSibling.childNodes);
-        }
-    }
+    savePages();
 });
 
 // the first function to run on page load
 (function init() {
-    var target = document.body.getElementsByClassName('flipsnap')[0];
-    var firstPage = document.body.getElementsByClassName('view-sheet-focus')[0];
+    var canvas = document.querySelector('canvas');
+    var sliderLabel = document.querySelector('.slider-label');
 
-
-
-    if(target != null) {
+    if(canvas && sliderLabel) { // wait for canvas to load
         // init imageArray length
-        pageTotal = parseInt(document.body.getElementsByClassName('slider-label')[0].textContent.split('/')[1]);
+        pageTotal = parseInt(sliderLabel.textContent.split('/')[1]);
         imageArray = Array.apply(null, Array(pageTotal)).map(function () {});
 
-        // delete view-protection, just for better visual
-        var doc = document.body.getElementsByClassName('view-protection')[0].remove();
+        savePages();
 
-
-
-        savePages(firstPage.firstChild.nextSibling.childNodes);
-
-        observer.observe(target, { attributes: true, childList: true, subtree: true });
+        observer.observe(sliderLabel, { childList: true });
 
     } else {
         setTimeout(init, 1000);
@@ -43,23 +30,37 @@ const observer = new MutationObserver(function(mutations) {
 
 
 // get images from canvases that are in focus (visible to the reader) and save to global var
-function savePages(pages) {
+function savePages() {
+    var flipsnap = document.querySelector('.flipsnap');
+    var flipsnapX = parseInt(flipsnap.style.transform.match(/translate3d\((-?\d+)px/)[1], 10); // x translation of current view
+    var sheets = document.querySelectorAll('.view-sheet-container');
+    var pages = null;
 
-    var pageIndex = parseInt(document.body.getElementsByClassName('slider-label')[0].textContent.split('/')[0])-1;
-
-    for(var i = pages.length - 1; i >= 0; i--) { // loop backwards, because manga reads right to left
-        if(pages[i].tagName === 'CANVAS') {
-            //save image as base64
-            imageArray[pageIndex] = pages[i].toDataURL().replace(/^data:image\/(png);base64,/, '');
-
-            console.log(`[MelonRipper] Saved page ${pageIndex+1} of ${imageArray.length}`);
-            pageIndex++;
+    for(var i = 0; i < sheets.length; i++) {
+        var sheetX = parseInt(sheets[i].style.transform.match(/translate3d\((-?\d+)px/)[1], 10); // x translation of sheet
+        if(sheetX === -flipsnapX) { // find sheet under reader's current view
+            pages = sheets[i].querySelectorAll('canvas');
+            break;
         }
-            if(pageIndex % 10 == 0 && pageIndex != 0){
-                saveToZip(lastIndex, pageIndex);
-                lastIndex = pageIndex;
-                imageArray = Array.apply(null, Array(pageTotal)).map(function () {});
-            }
+    }
+    console.assert(pages !== null, "[MelonRipper] Sheet under reader's current view not found");
+
+    var pageIndex = parseInt(document.querySelector('.slider-label').textContent.split('/')[0]) - 1;
+
+    for(var j = 0; j < pages.length; j++) {
+        var i = (window.wrappedJSObject.direction === 'LTR') ? j : (pages.length - 1 - j); // loop direction depends on reading direction
+
+        //save image as base64
+        imageArray[pageIndex] = pages[i].toDataURL().replace(/^data:image\/(png);base64,/, '');
+
+        console.log(`[MelonRipper] Saved page ${pageIndex+1} of ${imageArray.length}`);
+        pageIndex++;
+
+        if((pageIndex % 10 == 0 && pageIndex != 0) || (pageIndex == pageTotal)) {
+            saveToZip(lastIndex, pageIndex);
+            lastIndex = pageIndex;
+            imageArray = Array.apply(null, Array(pageTotal)).map(function () {});
+        }
     }
 }
 
